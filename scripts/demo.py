@@ -96,36 +96,36 @@ def main(args):
        
         # Step 2: Track objects in the video
         for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
-    mask_to_vis = {}
-    bbox_to_vis = {}
-
-    for obj_id, mask in zip(object_ids, masks):
-        mask = mask[0].cpu().numpy()
-        mask = mask > 0.0
-        non_zero_indices = np.argwhere(mask)
-        if len(non_zero_indices) == 0:
-            bbox = [0, 0, 0, 0]
-        else:
-            y_min, x_min = non_zero_indices.min(axis=0).tolist()
-            y_max, x_max = non_zero_indices.max(axis=0).tolist()
-            bbox = [x_min, y_min, x_max - x_min, y_max - y_min]
+            mask_to_vis = {}
+            bbox_to_vis = {}
         
-        bbox_to_vis[obj_id] = bbox
-        mask_to_vis[obj_id] = mask
-
-    if args.save_to_video:
-        img = loaded_frames[frame_idx]
-
-        for obj_id, mask in mask_to_vis.items():
-            mask_img = np.zeros((height, width, 3), np.uint8)
-            mask_img[mask] = color[obj_id % len(color)]  # Assign unique colors per object
-            img = cv2.addWeighted(img, 1, mask_img, 0.2, 0)
-
-        for obj_id, bbox in bbox_to_vis.items():
-            cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), 
-                          color[obj_id % len(color)], 2)
-
-        out.write(img)
+            for obj_id, mask in zip(object_ids, masks):
+                mask = mask[0].cpu().numpy()
+                mask = mask > 0.0
+                non_zero_indices = np.argwhere(mask)
+                if len(non_zero_indices) == 0:
+                    bbox = [0, 0, 0, 0]
+                else:
+                    y_min, x_min = non_zero_indices.min(axis=0).tolist()
+                    y_max, x_max = non_zero_indices.max(axis=0).tolist()
+                    bbox = [x_min, y_min, x_max - x_min, y_max - y_min]
+                
+                bbox_to_vis[obj_id] = bbox
+                mask_to_vis[obj_id] = mask
+        
+            if args.save_to_video:
+                img = loaded_frames[frame_idx]
+        
+                for obj_id, mask in mask_to_vis.items():
+                    mask_img = np.zeros((height, width, 3), np.uint8)
+                    mask_img[mask] = color[obj_id % len(color)]  # Assign unique colors per object
+                    img = cv2.addWeighted(img, 1, mask_img, 0.2, 0)
+        
+                for obj_id, bbox in bbox_to_vis.items():
+                    cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), 
+                                  color[obj_id % len(color)], 2)
+        
+                out.write(img)
 
 
         if args.save_to_video:
