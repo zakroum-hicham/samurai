@@ -73,6 +73,7 @@ def main(args):
         state = predictor.init_state(frames_or_path, offload_video_to_cpu=True)
 
         # Step 1: Initialize all objects from `prompts`
+        print(prompts)
         for obj_id, (bbox, track_label) in enumerate(prompts):
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=obj_id)
 
