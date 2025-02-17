@@ -100,9 +100,9 @@ def main(args):
         state = predictor.init_state(frames_or_path, offload_video_to_cpu=True)
         
         # Step 1: Initialize all objects from `prompts`
-        print(prompts)
         for obj_id in prompts:
-            bbox = prompts[obj_id][0]
+            bbox = prompts[obj_id][0][0]
+            print(bbox)
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=obj_id)
        
 
