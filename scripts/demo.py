@@ -73,12 +73,12 @@ def main(args):
         state = predictor.init_state(frames_or_path, offload_video_to_cpu=True)
 
         # Step 1: Initialize all objects from `prompts`
-        print(prompts)
         for obj_id in prompts:
             bbox, track_label = prompts[obj_id][0],prompts[obj_id][1]
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=obj_id)
-        print(state)
+       
         # Step 2: Track objects in the video
+        print(predictor.propagate_in_video(state))
         for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
             mask_to_vis = {}
             bbox_to_vis = {}
