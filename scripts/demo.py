@@ -14,16 +14,18 @@ color = [(255, 0, 0)]
 def load_txt(gt_path):
     with open(gt_path, 'r') as f:
         gt = f.readlines()
-    
+
     prompts = {}
     for fid, line in enumerate(gt):
         boxes = []
-        for bbox in line.strip().split(';'):
-            x, y, w, h = map(float, bbox.split(','))
-            x, y, w, h = int(x), int(y), int(w), int(h)
+        for bbox in line.strip().split('\n'):
+            x, y, w, h = map(int, bbox.split(','))
             boxes.append(((x, y, x + w, y + h), len(boxes)))
+        
         prompts[fid] = boxes
+
     return prompts
+
 
 
 # def load_txt(gt_path):
