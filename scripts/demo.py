@@ -78,7 +78,6 @@ def main(args):
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=obj_id)
        
         # Step 2: Track objects in the video
-        print(predictor.propagate_in_video(state))
         for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
             mask_to_vis = {}
             bbox_to_vis = {}
@@ -95,7 +94,7 @@ def main(args):
                     bbox = [x_min, y_min, x_max - x_min, y_max - y_min]
                 bbox_to_vis[obj_id] = bbox
                 mask_to_vis[obj_id] = mask
-
+            print("test")
             # Step 3: Draw results on the video
             if args.save_to_video:
                 img = loaded_frames[frame_idx]
