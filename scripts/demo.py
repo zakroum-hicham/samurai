@@ -98,7 +98,7 @@ def main(args):
         for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
             mask_to_vis = {}
             bbox_to_vis = {}
-        
+            
             for obj_id, mask in zip(object_ids, masks):
                 mask = mask[0].cpu().numpy()
                 mask = mask > 0.0
