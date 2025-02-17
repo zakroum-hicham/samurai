@@ -77,7 +77,7 @@ def main(args):
         for obj_id in prompts:
             bbox, track_label = prompts[obj_id][0],prompts[obj_id][1]
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=obj_id)
-
+        print(state)
         # Step 2: Track objects in the video
         for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
             mask_to_vis = {}
