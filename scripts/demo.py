@@ -98,10 +98,11 @@ def main(args):
 
     with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
         state = predictor.init_state(frames_or_path, offload_video_to_cpu=True)
-
+        
         # Step 1: Initialize all objects from `prompts`
-        bbox_list = prompts[0]  # Get all objects from first frame
-        for obj_id, (bbox, _) in enumerate(bbox_list):
+        print(prompts)
+        for obj_id in prompts:
+            bbox = prompts[obj_id][0]
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=obj_id)
        
 
