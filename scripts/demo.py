@@ -14,12 +14,27 @@ color = [(255, 0, 0)]
 def load_txt(gt_path):
     with open(gt_path, 'r') as f:
         gt = f.readlines()
+    
     prompts = {}
     for fid, line in enumerate(gt):
-        x, y, w, h = map(float, line.split(','))
-        x, y, w, h = int(x), int(y), int(w), int(h)
-        prompts[fid] = ((x, y, x + w, y + h), 0)
+        boxes = []
+        for bbox in line.strip().split(';'):
+            x, y, w, h = map(float, bbox.split(','))
+            x, y, w, h = int(x), int(y), int(w), int(h)
+            boxes.append(((x, y, x + w, y + h), len(boxes)))
+        prompts[fid] = boxes
     return prompts
+
+
+# def load_txt(gt_path):
+#     with open(gt_path, 'r') as f:
+#         gt = f.readlines()
+#     prompts = {}
+#     for fid, line in enumerate(gt):
+#         x, y, w, h = map(float, line.split(','))
+#         x, y, w, h = int(x), int(y), int(w), int(h)
+#         prompts[fid] = ((x, y, x + w, y + h), 0)
+#     return prompts
 
 def determine_model_cfg(model_path):
     if "large" in model_path:
@@ -73,40 +88,43 @@ def main(args):
         state = predictor.init_state(frames_or_path, offload_video_to_cpu=True)
 
         # Step 1: Initialize all objects from `prompts`
-        for obj_id in prompts:
-            bbox, track_label = prompts[obj_id][0],prompts[obj_id][1]
+        bbox_list = prompts[0]  # Get all objects from first frame
+        for obj_id, (bbox, _) in enumerate(bbox_list):
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=obj_id)
        
         # Step 2: Track objects in the video
         for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
-            mask_to_vis = {}
-            bbox_to_vis = {}
+    mask_to_vis = {}
+    bbox_to_vis = {}
 
-            for obj_id, mask in zip(object_ids, masks):
-                mask = mask[0].cpu().numpy()
-                mask = mask > 0.0
-                non_zero_indices = np.argwhere(mask)
-                if len(non_zero_indices) == 0:
-                    bbox = [0, 0, 0, 0]
-                else:
-                    y_min, x_min = non_zero_indices.min(axis=0).tolist()
-                    y_max, x_max = non_zero_indices.max(axis=0).tolist()
-                    bbox = [x_min, y_min, x_max - x_min, y_max - y_min]
-                bbox_to_vis[obj_id] = bbox
-                mask_to_vis[obj_id] = mask
-            print("test")
-            # Step 3: Draw results on the video
-            if args.save_to_video:
-                img = loaded_frames[frame_idx]
-                for obj_id, mask in mask_to_vis.items():
-                    mask_img = np.zeros((height, width, 3), np.uint8)
-                    mask_img[mask] = color[(obj_id + 1) % len(color)]
-                    img = cv2.addWeighted(img, 1, mask_img, 0.2, 0)
+    for obj_id, mask in zip(object_ids, masks):
+        mask = mask[0].cpu().numpy()
+        mask = mask > 0.0
+        non_zero_indices = np.argwhere(mask)
+        if len(non_zero_indices) == 0:
+            bbox = [0, 0, 0, 0]
+        else:
+            y_min, x_min = non_zero_indices.min(axis=0).tolist()
+            y_max, x_max = non_zero_indices.max(axis=0).tolist()
+            bbox = [x_min, y_min, x_max - x_min, y_max - y_min]
+        
+        bbox_to_vis[obj_id] = bbox
+        mask_to_vis[obj_id] = mask
 
-                for obj_id, bbox in bbox_to_vis.items():
-                    cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), color[obj_id % len(color)], 2)
+    if args.save_to_video:
+        img = loaded_frames[frame_idx]
 
-                out.write(img)
+        for obj_id, mask in mask_to_vis.items():
+            mask_img = np.zeros((height, width, 3), np.uint8)
+            mask_img[mask] = color[obj_id % len(color)]  # Assign unique colors per object
+            img = cv2.addWeighted(img, 1, mask_img, 0.2, 0)
+
+        for obj_id, bbox in bbox_to_vis.items():
+            cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), 
+                          color[obj_id % len(color)], 2)
+
+        out.write(img)
+
 
         if args.save_to_video:
             out.release()
