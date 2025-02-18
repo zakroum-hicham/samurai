@@ -450,7 +450,7 @@ class SAM2Base(torch.nn.Module):
                     y_max, x_max = non_zero_indices.max(dim=0).values
                     high_res_bbox = [x_min.item(), y_min.item(), x_max.item(), y_max.item()]
                 valid_objects = ious[0][best_iou_inds] > self.stable_ious_threshold
-                if valid_objects.any():
+                if valid_objects:
                     self.kf_mean, self.kf_covariance = self.kf.update(self.kf_mean, self.kf_covariance, self.kf.xyxy_to_xyah(high_res_bbox))
                     self.stable_frames += 1
                 else:
@@ -494,7 +494,7 @@ class SAM2Base(torch.nn.Module):
                     }
                 self.frame_cnt += 1
                 valid_objects = ious[0][best_iou_inds] < self.stable_ious_threshold
-                if valid_objects.any():
+                if valid_objects:
                     self.stable_frames = 0
                 else:
                     self.kf_mean, self.kf_covariance = self.kf.update(self.kf_mean, self.kf_covariance, self.kf.xyxy_to_xyah(high_res_multibboxes[best_iou_inds]))
