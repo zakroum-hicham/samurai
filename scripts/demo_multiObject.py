@@ -78,7 +78,6 @@ def main(args):
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=idx)
 
         for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
-            print(object_ids)
             mask_to_vis = {}
             bbox_to_vis = {}
 
