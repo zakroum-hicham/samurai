@@ -75,6 +75,9 @@ def main(args):
         for idx in prompts:
             bbox,track_label = prompts[idx]
             _, _, masks = predictor.add_new_points_or_box(state, box=bbox, frame_idx=0, obj_id=idx)
+
+        with open("state.txt", "w") as f:
+            f.write(f"{state}")
             
         for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
             mask_to_vis = {}
