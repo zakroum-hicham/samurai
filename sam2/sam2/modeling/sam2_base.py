@@ -394,7 +394,7 @@ class SAM2Base(torch.nn.Module):
             repeat_image=False,  # the image is already batched
             high_res_features=high_res_features,
         )
-        print(ious)
+        
         if self.pred_obj_scores:
             is_obj_appearing = object_score_logits > self.min_obj_score_logits
 
@@ -449,7 +449,8 @@ class SAM2Base(torch.nn.Module):
                     y_min, x_min = non_zero_indices.min(dim=0).values
                     y_max, x_max = non_zero_indices.max(dim=0).values
                     high_res_bbox = [x_min.item(), y_min.item(), x_max.item(), y_max.item()]
-                if ious[0][best_iou_inds] > self.stable_ious_threshold:
+                valid_objects = ious[0][best_iou_inds] > self.stable_ious_threshold
+                if valid_objects.any():
                     self.kf_mean, self.kf_covariance = self.kf.update(self.kf_mean, self.kf_covariance, self.kf.xyxy_to_xyah(high_res_bbox))
                     self.stable_frames += 1
                 else:
@@ -492,8 +493,8 @@ class SAM2Base(torch.nn.Module):
                         "final_selection": best_iou_inds.cpu(),
                     }
                 self.frame_cnt += 1
-
-                if ious[0][best_iou_inds] < self.stable_ious_threshold:
+                valid_objects = ious[0][best_iou_inds] < self.stable_ious_threshold
+                if valid_objects.any():
                     self.stable_frames = 0
                 else:
                     self.kf_mean, self.kf_covariance = self.kf.update(self.kf_mean, self.kf_covariance, self.kf.xyxy_to_xyah(high_res_multibboxes[best_iou_inds]))
