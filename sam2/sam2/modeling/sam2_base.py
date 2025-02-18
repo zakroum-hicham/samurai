@@ -394,6 +394,7 @@ class SAM2Base(torch.nn.Module):
             repeat_image=False,  # the image is already batched
             high_res_features=high_res_features,
         )
+        print(ious)
         if self.pred_obj_scores:
             is_obj_appearing = object_score_logits > self.min_obj_score_logits
 
