@@ -8,6 +8,7 @@ import gc
 import sys
 sys.path.append("./sam2")
 from sam2.build_sam import build_sam2_video_predictor
+import supervision as sv
 
 color = [(255, 0, 0)]
 
@@ -103,7 +104,7 @@ def main(args):
 
                 for obj_id, bbox in bbox_to_vis.items():
                     cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), color[obj_id % len(color)], 2)
-                cv2.imshow("test",img)
+                sv.plot_image(img)
                 out.write(img)
 
         if args.save_to_video:
